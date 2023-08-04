@@ -96,7 +96,7 @@ def show_tables():
         table_title_label.pack(pady=5)
         table_trajectory = ttk.Treeview(frame_inner,
                                         columns=(
-                                        "trajectory_x", "trajectory_z", "trajectory_x_speed", "trajectory_z_speed"))
+                                            "trajectory_x", "trajectory_z", "trajectory_x_speed", "trajectory_z_speed"))
         table_trajectory.heading("#0", text="id")
         table_trajectory.heading("trajectory_x", text="x")
         table_trajectory.heading("trajectory_z", text="z")
@@ -182,7 +182,7 @@ def graph_meteorites(height):
 
 def validate_meteorites_explosion(trajectory_z, probability_explosion_meteorites, parts_explodes):
     yes_or_not_explode = random.randint(0, 100)
-    if trajectory_z[-1] <= 0.0 or 0.0 < trajectory_z[-1] < 0.1:
+    if trajectory_z[-1] <= 0:
         return 0, "exploto"
     else:
         if yes_or_not_explode <= probability_explosion_meteorites:
@@ -207,68 +207,85 @@ def calculate_trajectories(meteorite, delta_t, probability_explosion_meteorites,
     trajectory_z = list(meteorite["trajectory_z"])
     trajectory_x_speed = list(meteorite["trajectory_x_speed"])
     trajectory_z_speed = list(meteorite["trajectory_z_speed"])
-    if len(trajectory_x) == 1 and trajectory_x[-1] == 0.0 and len(trajectory_z) == 1 and trajectory_z[-1] == 0.0 and meteorite["status"] == "Active":
+    print(trajectory_z, trajectory_x)
+    if len(trajectory_x) == 1 and trajectory_x[0] == 0.0 and len(trajectory_z) == 1 and trajectory_z[0] == 0.0 and \
+            meteorite["status"] == "Active":
         trajectory_x_g = [x]
-        trajectory_z_g = [z]
-        trajectory_x_speed_g = [x_speed]
-        trajectory_z_speed_g = [z_speed]
         meteorite["trajectory_x"] = trajectory_x_g
+        trajectory_z_g = [z]
         meteorite["trajectory_z"] = trajectory_z_g
+        trajectory_x_speed_g = [x_speed]
         meteorite["trajectory_x_speed"] = trajectory_x_speed_g
+        trajectory_z_speed_g = [z_speed]
         meteorite["trajectory_z_speed"] = trajectory_z_speed_g
+
+        print(trajectory_x, "del primero")
+        print(trajectory_x_g, "del primero")
     else:
         value, identifier = validate_meteorites_explosion(trajectory_z, probability_explosion_meteorites,
                                                           amount_meteorites_limits)
         if value == 0 and identifier == "no exploto" and meteorite["status"] == "Active":
-            trajectory_x.append(trajectory_x[-1] + (trajectory_x_speed[-1] * delta_t))
-            trajectory_z.append(trajectory_z[-1] + (trajectory_z_speed[-1] * delta_t))
-            x_noise = np.random.normal(loc=0, scale=0.1)
-            trajectory_x_speed.append(trajectory_x_speed[-1] + x_noise)
-            z_noise = abs(np.random.normal(loc=0, scale=0.1))
-            trajectory_z_speed.append(trajectory_z_speed[-1] - z_noise)
-
-            meteorite["trajectory_x"] = trajectory_x
-            meteorite["trajectory_z"] = trajectory_z
-            meteorite["trajectory_x_speed"] = trajectory_x_speed
-            meteorite["trajectory_z_speed"] = trajectory_z_speed
-            meteorite["status"] = "Active"
-        elif value == 0 and identifier == "exploto" and meteorite["status"] == "Active":
-            if trajectory_z[-1] <= 0.0 or 0.0 < trajectory_z[-1] < 0.1:
+            if trajectory_z[-1] <= 0.0:
+                print("entro no unu")
                 trajectory_z[-1] = 0.0
                 meteorite["trajectory_x"] = trajectory_x
                 meteorite["trajectory_z"] = trajectory_z
                 meteorite["trajectory_x_speed"] = trajectory_x_speed
                 meteorite["trajectory_z_speed"] = trajectory_z_speed
                 meteorite["status"] = "Inactive"
-            meteorite["trajectory_x"] = trajectory_x
-            meteorite["trajectory_z"] = trajectory_z
-            meteorite["trajectory_x_speed"] = trajectory_x_speed
-            meteorite["trajectory_z_speed"] = trajectory_z_speed
-            meteorite["status"] = "Inactive"
+            else:
+                x_noise = np.random.normal(loc=0, scale=0.1)
+                trajectory_x_speed.append(trajectory_x_speed[-1] + x_noise)
+                z_noise = abs(np.random.normal(loc=0, scale=0.1))
+                trajectory_z_speed.append(trajectory_z_speed[-1] - z_noise)
+                trajectory_x.append(trajectory_x[-1] + (trajectory_x_speed[-1] * delta_t))
+                trajectory_z.append(trajectory_z[-1] + (trajectory_z_speed[-1] * delta_t))
+                print(trajectory_x, trajectory_z, "del segundo")
+                meteorite["trajectory_x"] = trajectory_x
+                meteorite["trajectory_z"] = trajectory_z
+                meteorite["trajectory_x_speed"] = trajectory_x_speed
+                meteorite["trajectory_z_speed"] = trajectory_z_speed
+                meteorite["status"] = "Active"
+        elif value == 0 and identifier == "exploto" and meteorite["status"] == "Active":
+            if trajectory_z[-1] <= 0.0:
+                trajectory_z[-1] = 0.0
+                meteorite["trajectory_x"] = trajectory_x
+                meteorite["trajectory_z"] = trajectory_z
+                meteorite["trajectory_x_speed"] = trajectory_x_speed
+                meteorite["trajectory_z_speed"] = trajectory_z_speed
+                meteorite["status"] = "Inactive"
+            else:
+                meteorite["trajectory_x"] = trajectory_x
+                meteorite["trajectory_z"] = trajectory_z
+                meteorite["trajectory_x_speed"] = trajectory_x_speed
+                meteorite["trajectory_z_speed"] = trajectory_z_speed
+                meteorite["status"] = "Inactive"
         elif value > 1 and identifier == "meteoritos" and meteorite["status"] == "Active":
             meteorite["trajectory_x"] = trajectory_x
             meteorite["trajectory_z"] = trajectory_z
             meteorite["trajectory_x_speed"] = trajectory_x_speed
             meteorite["trajectory_z_speed"] = trajectory_z_speed
             meteorite["status"] = "Inactive"
+            print(trajectory_z[-1])
             for m in range(value):
                 new_meteorite = create_meteorite(len(list_meteorites), trajectory_x[-1], trajectory_z[-1])
                 list_meteorites.append(new_meteorite)
+        print(trajectory_z)
 
 
 def create_meteorite(id_meteorite, x, z):
     x_speed = calculate_x_speed()
     z_speed = calculate_z_speed()
     new_meteorite = dict(Meteorite.Meteorite(id=id_meteorite,
-                                                x=x,
-                                                z=z,
-                                                x_speed=x_speed,
-                                                z_speed=z_speed,
-                                                trajectory_x=[0.0],
-                                                trajectory_z=[0.0],
-                                                trajectory_x_speed=[0.0],
-                                                trajectory_z_speed=[0.0],
-                                                status="Active"))
+                                             x=x,
+                                             z=z,
+                                             x_speed=x_speed,
+                                             z_speed=z_speed,
+                                             trajectory_x=[0.0],
+                                             trajectory_z=[0.0],
+                                             trajectory_x_speed=[0.0],
+                                             trajectory_z_speed=[0.0],
+                                             status="Active"))
     return new_meteorite
 
 
@@ -283,7 +300,7 @@ def calculate_x_speed():
 
 
 def calculate_x():
-    x = np.random.uniform(low=-50, high=50)
+    x = np.random.uniform(low=-100, high=100)
     return x
 
 
@@ -307,8 +324,9 @@ def simulate(time_simulate, numbers_meteorites, time_sampling, amount_meteorites
             x = calculate_x()
             meteorite = create_meteorite(len(list_meteorites), x, height)
             list_meteorites.append(meteorite)
-        for i, m in enumerate(list_meteorites):
+        for j, m in enumerate(list_meteorites):
             calculate_trajectories(m, t, probability_explosion_meteorites, amount_meteorites_limits)
+        print(list_meteorites)
     graph_meteorites(height)
     options_show_tables()
     if clear_button is not None:
@@ -520,7 +538,8 @@ def options_sampling_time(time_simulate):
         amount_sampling_time.pack(padx=2, pady=8, ipady=2, ipadx=8)
         add_sampling_time = tkinter.Button(canvas_options, text="Agregar tiempo",
                                            command=lambda: options_numbers_meteorites_by_day(time_simulate,
-                                                                                             float(amount_sampling_time.get())))
+                                                                                             float(
+                                                                                                 amount_sampling_time.get())))
         add_sampling_time.pack(padx=2, ipady=2, ipadx=8)
 
 
