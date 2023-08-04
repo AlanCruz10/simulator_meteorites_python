@@ -1,4 +1,4 @@
-import time
+import math
 import tkinter
 from tkinter import ttk
 import random
@@ -8,7 +8,6 @@ import mplcursors
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import matplotlib.pyplot as plt
 import pandas as pd
-import math
 
 window = tkinter.Tk()
 window.geometry("500x500")
@@ -28,35 +27,25 @@ list_max = []
 label_meteorites_limit = None
 amount_meteorites_limit = None
 add_meteorites_limit_button = None
-
-# Variables relacionadas con el tiempo
 label_type_time = None
 entry_time = None
 add_time = None
-
-# Variables relacionadas con meteoritos
 label_meteorites = None
 amount_meteorites = None
 add_meteorites = None
-
-# Variables relacionadas con tiempo de muestreo
 label_sampling_time = None
 amount_sampling_time = None
 add_sampling_time = None
-
-# Variables relacionadas con la altura
 label_height = None
 amount_height = None
 add_height = None
-
-# Variables relacionadas con la probabilidad de explosión
 label_probability_explosion = None
 probability_explosion = None
 add_probability_button = None
-
 see_tables = None
 simulate_fall = None
 clear_button = None
+
 
 def show_tables():
     canvas_tables = tkinter.Canvas(window, background='#%02x%02x%02x' % (100, 20, 70))
@@ -106,7 +95,8 @@ def show_tables():
                                           bg='#%02x%02x%02x' % (20, 120, 120), fg="white")
         table_title_label.pack(pady=5)
         table_trajectory = ttk.Treeview(frame_inner,
-                                        columns=("trajectory_x", "trajectory_z", "trajectory_x_speed", "trajectory_z_speed"))
+                                        columns=(
+                                        "trajectory_x", "trajectory_z", "trajectory_x_speed", "trajectory_z_speed"))
         table_trajectory.heading("#0", text="id")
         table_trajectory.heading("trajectory_x", text="x")
         table_trajectory.heading("trajectory_z", text="z")
@@ -120,12 +110,8 @@ def show_tables():
         table_trajectory.column("trajectory_z_speed", width=121, anchor="center")
 
         table_trajectory.pack(pady=1)
-        # trajectory_xo = list(row["trajectory_x"][1:])
-        # trajectory_zo = list(row["trajectory_z"][1:])
-        # trajectory_xo.append(0.0) trajectory_zo.append(0.0) for t_index, (x, z, xo, zo) in enumerate(zip(row[
-        # "trajectory_x"], row["trajectory_z"], row["trajectory_x_noise"], row["trajectory_z_noise"])):
-        for t_index, (x, z, xo, zo) in enumerate(zip(row["trajectory_x"], row["trajectory_z"], row["trajectory_x_speed"], row["trajectory_z_speed"])):
-            # table_trajectory.insert("", "end", text=t_index + 1, values=(x, z, xo, zo))
+        for t_index, (x, z, xo, zo) in enumerate(
+                zip(row["trajectory_x"], row["trajectory_z"], row["trajectory_x_speed"], row["trajectory_z_speed"])):
             table_trajectory.insert("", "end", text=t_index + 1, values=(x, z, xo, zo))
         table_trajectory.pack(pady=1)
 
@@ -153,7 +139,6 @@ def graph_meteorites(height):
 
     for t in range(len(list_meteorites)):
         ax.plot(list_meteorites[t]["trajectory_x"], list_meteorites[t]["trajectory_z"], label=f'Meteorito : {t + 1}')
-        # ax.plot(trajectory_x_noise, trajectory_z_noise, linestyle="dashed")
 
     ax.spines['left'].set_position('zero')
     ax.spines['left'].set_color('gray')
@@ -196,179 +181,20 @@ def graph_meteorites(height):
 
 
 def validate_meteorites_explosion(trajectory_z, probability_explosion_meteorites, parts_explodes):
-    # prob = random.random()
-    # yes_or_not_explode = random.randint(0, 1)
-    # if trajectory_z[-1] <= 0.0 or 0.0 < trajectory_z[-1] < 0.1:
-    #     return 0, "exploto"
-    # elif prob == 1 or probability_explosion >= 100 and parts_explodes >= 2:
-    #     value, identifier = number_of_meteorites_generated(parts_explodes)
-    #     return value, identifier
-    # elif prob + ((probability_explosion / 100) / 2) <= probability_explosion / 100 <= 1 and trajectory_z[
-    #     -1] > 0.0 and yes_or_not_explode == 1 and parts_explodes >= 2:
-    #     value, identifier = number_of_meteorites_generated(parts_explodes)
-    #     return value, identifier
-    # else:
-    #     return 0, "no exploto"
-
-    low_probability = random.random()
-    top_probability = random.uniform(1, 2)
     yes_or_not_explode = random.randint(0, 100)
     if trajectory_z[-1] <= 0.0 or 0.0 < trajectory_z[-1] < 0.1:
         return 0, "exploto"
     else:
-        if probability_explosion_meteorites >= 100 >= yes_or_not_explode >= 95 and low_probability == 1 and parts_explodes >= 2:
-            value, identifier = number_of_meteorites_generated(parts_explodes, 100, probability_explosion_meteorites)
-            return value, identifier
-        elif 0 <= probability_explosion_meteorites <= 20 and 95 <= yes_or_not_explode <= 100 and low_probability / 2 >= probability_explosion_meteorites / 100 and parts_explodes >=2:
-            value, identifier = number_of_meteorites_generated(parts_explodes, 0, 20)
-            return value, identifier
-        elif 80 <= probability_explosion_meteorites < 100 and 95 <= yes_or_not_explode <= 100 and top_probability / 2 >= probability_explosion_meteorites / 100 and parts_explodes >=2:
-            value, identifier = number_of_meteorites_generated(parts_explodes, 80, 100)
-            return value, identifier
-        elif 20 < probability_explosion_meteorites < 50 and 95 <= yes_or_not_explode <= 100 and low_probability / 2 >= probability_explosion_meteorites / 100 and parts_explodes >=2:
-            value, identifier = number_of_meteorites_generated(parts_explodes, 20, 50)
-            return value, identifier
-        elif 50 <= probability_explosion_meteorites < 80 and 95 <= yes_or_not_explode <= 100 and top_probability / 2 >= probability_explosion_meteorites / 100 and parts_explodes >=2:
-            value, identifier = number_of_meteorites_generated(parts_explodes, 20, 80)
+        if yes_or_not_explode <= probability_explosion_meteorites:
+            value, identifier = number_of_meteorites_generated(parts_explodes)
             return value, identifier
         else:
             return 0, "no exploto"
 
-    # elif prob == 1 or probability_explosion >= 100 and parts_explodes >= 2:
-    #     value, identifier = number_of_meteorites_generated(parts_explodes, probability_explosion, 100)
-    #     return value, identifier
-    # elif 0.8 <= probability_explosion / 100 < 1.0 or 0.8 <= probability_explosion / 100 < 1 and mid_p / 2 >= probability_explosion / 100 <= 1 and \
-    #         trajectory_z[
-    #             -1] > 0.0 and yes_or_not_explode == 1 and parts_explodes >= 2:
-    #     value, identifier = number_of_meteorites_generated(parts_explodes, 100, 80)
-    #     return value, identifier
-    # elif 0 <= probability_explosion / 100 < 0.2 or 0.0 <= probability_explosion / 100 <= 0.2 and prob / 2 >= probability_explosion / 100 <= 0.2 and \
-    #         trajectory_z[
-    #             -1] > 0.0 and yes_or_not_explode == 1 and parts_explodes >= 2:
-    #     value, identifier = number_of_meteorites_generated(parts_explodes, 20, 0)
-    #     return value, identifier
-    # elif 0.2 < probability_explosion / 100 < 0.8 and random_p / 2 >= probability_explosion / 100 <= 0.8 and \
-    #         trajectory_z[
-    #             -1] > 0.0 and yes_or_not_explode == 1 and parts_explodes >= 2:
-    #     value, identifier = number_of_meteorites_generated(parts_explodes, 20, 80)
-    #     return value, identifier
 
-    # elif probability_explosion / 100 > 0.5 and mid_p / 2 >= probability_explosion / 100 and trajectory_z[
-    #     -1] > 0.0 and yes_or_not_explode == 1 and parts_explodes >= 2:
-    #     value, identifier = number_of_meteorites_generated(parts_explodes)
-    #     return value, identifier
-    # elif prob / 2 >= probability_explosion / 100 and trajectory_z[
-    #     -1] > 0.0 and yes_or_not_explode == 1 and parts_explodes >= 2:
-    #     value, identifier = number_of_meteorites_generated(parts_explodes)
-    #     return value, identifier
-    # else:
-    #     return 0, "no exploto"
-
-
-def number_of_meteorites_generated(parts_explodes, probability_explosion_lower, probability_explosion_meteorites):
-    explosion = random.randint(probability_explosion_lower, probability_explosion_meteorites)
-    if explosion >= 100:
-        random_number = random.randint(2, parts_explodes)
-        return random_number, "meteoritos"
-    elif 0 <= explosion <= 20:
-        if 0 <= explosion <= 10:
-            return 0, "no exploto"
-        else:
-            choice = random.randint(0, 2)
-            if choice == 0:
-                return 0, "no exploto"
-            elif choice == 2:
-                random_number = random.randint(2, parts_explodes)
-                return random_number, "meteoritos"
-            else:
-                return 0, "exploto"
-    elif 80 <= explosion < 100:
-        choice = random.randint(0, 2)
-        if choice == 0 and explosion <= 85:
-            return 0, "no exploto"
-        elif choice == 2:
-            random_number = random.randint(2, parts_explodes)
-            return random_number, "meteoritos"
-        else:
-            return 0, "exploto"
-    elif 20 < explosion < 80:
-        if 50 <= explosion < 80:
-            choice = random.randint(0, 2)
-            if choice == 0 and explosion <= 60:
-                return 0, "no exploto"
-            elif choice == 2:
-                random_number = random.randint(2, parts_explodes)
-                return random_number, "meteoritos"
-            else:
-                return 0, "exploto"
-        else:
-            choice = random.randint(0, 2)
-            if choice == 0 and explosion <= 30:
-                return 0, "no exploto"
-            elif choice == 2:
-                random_number = random.randint(2, parts_explodes)
-                return random_number, "meteoritos"
-            else:
-                return 0, "exploto"
-    else:
-        return 0, "no exploto"
-
-    # if 80 <= explosion <= 100:
-    #     choice = random.randint(0, 1)
-    #     if choice == 0:
-    #         return 0, "no exploto"
-    #     else:
-    #         random_number = random.randint(2, parts_explodes)
-    #         return random_number, "meteoritos"
-    #         # random_number = np.random.poisson(parts_explodes)
-    #         # if random_number == 1:
-    #         #     return random_number + 1, "meteoritos"
-    #         # return random_number, "meteoritos"
-    # elif 0 <= explosion <= 20:
-    #     return 0, "no exploto"
-    # elif 20 < explosion < 80:
-    #     explosion = random.randint(20, 80)
-    #     if 50 <= explosion <= 80:
-    #         explosion_random = random.randint(0, 1)
-    #         if explosion_random == 1:
-    #             return 0, "exploto"
-    #         else:
-    #             return 0, "no exploto"
-    #     else:
-    #         return 0, "no exploto"
-    # else:
-    #     random_number = random.randint(2, parts_explodes)
-    #     return random_number, "meteoritos"
-
-
-# def validate_meteorites_explosion(trajectory_z):
-#     explosion = random.randint(80, 100)
-#     if trajectory_z[-1] <= 0.0 or 0.0 < trajectory_z[-1] < 0.1:
-#         return 0, "exploto"
-#     elif 80 <= explosion <= 100:
-#         meteorites = numbers_meteorites()
-#         if meteorites == 0:
-#             return 0, "no exploto"
-#         else:
-#             return meteorites, "meteorites"
-#     elif 0 <= explosion <= 20:
-#         return 0, "no exploto"
-#     else:
-#         # arrival = random.uniform(20, 80)
-#         # arrival = np.random.uniform(20, 80)
-#         arrival = random.randint(20, 80)
-#         if 50 <= arrival <= 80:
-#             choice = random.randint(0, 1)
-#             if choice == 0:
-#                 return 0, "no exploto"
-#             else:
-#                 meteorites = numbers_meteorites()
-#                 if meteorites == 0:
-#                     return 0, "no exploto"
-#                 else:
-#                     return meteorites, "meteorites"
-#         else:
-#             return 0, "no exploto"
+def number_of_meteorites_generated(parts_explodes):
+    random_number = random.randint(2, parts_explodes)
+    return random_number, "meteoritos"
 
 
 def calculate_trajectories(meteorite, delta_t, probability_explosion_meteorites, amount_meteorites_limits):
@@ -381,7 +207,7 @@ def calculate_trajectories(meteorite, delta_t, probability_explosion_meteorites,
     trajectory_z = list(meteorite["trajectory_z"])
     trajectory_x_speed = list(meteorite["trajectory_x_speed"])
     trajectory_z_speed = list(meteorite["trajectory_z_speed"])
-    if len(trajectory_x) == 1 and trajectory_x[0] == 0.0 and len(trajectory_z) == 1 and trajectory_z[0] == 0.0 and meteorite["status"] == "Active":
+    if len(trajectory_x) == 1 and trajectory_x[-1] == 0.0 and len(trajectory_z) == 1 and trajectory_z[-1] == 0.0 and meteorite["status"] == "Active":
         trajectory_x_g = [x]
         trajectory_z_g = [z]
         trajectory_x_speed_g = [x_speed]
@@ -394,19 +220,12 @@ def calculate_trajectories(meteorite, delta_t, probability_explosion_meteorites,
         value, identifier = validate_meteorites_explosion(trajectory_z, probability_explosion_meteorites,
                                                           amount_meteorites_limits)
         if value == 0 and identifier == "no exploto" and meteorite["status"] == "Active":
+            trajectory_x.append(trajectory_x[-1] + (trajectory_x_speed[-1] * delta_t))
+            trajectory_z.append(trajectory_z[-1] + (trajectory_z_speed[-1] * delta_t))
             x_noise = np.random.normal(loc=0, scale=0.1)
-            x_speed_noise = x_speed + x_noise
-            trajectory_x.append(trajectory_x[-1] + (x_speed_noise * delta_t))
-            trajectory_x_speed.append(x_speed_noise)
-            z_noise = np.random.normal(loc=0, scale=0.1)
-            z_speed_noise = z_speed + z_noise
-            if z_speed_noise > 0.0 or z_speed_noise > 0:
-                z_speed_noise_n = z_speed_noise * -1
-                trajectory_z.append(trajectory_z[-1] + (z_speed_noise_n * delta_t))
-                trajectory_z_speed.append(z_speed_noise_n)
-            else:
-                trajectory_z.append(trajectory_z[-1] + (z_speed_noise * delta_t))
-                trajectory_z_speed.append(z_speed_noise)
+            trajectory_x_speed.append(trajectory_x_speed[-1] + x_noise)
+            z_noise = abs(np.random.normal(loc=0, scale=0.1))
+            trajectory_z_speed.append(trajectory_z_speed[-1] - z_noise)
 
             meteorite["trajectory_x"] = trajectory_x
             meteorite["trajectory_z"] = trajectory_z
@@ -426,7 +245,7 @@ def calculate_trajectories(meteorite, delta_t, probability_explosion_meteorites,
             meteorite["trajectory_x_speed"] = trajectory_x_speed
             meteorite["trajectory_z_speed"] = trajectory_z_speed
             meteorite["status"] = "Inactive"
-        elif value > 1 and identifier == "meteoritos":
+        elif value > 1 and identifier == "meteoritos" and meteorite["status"] == "Active":
             meteorite["trajectory_x"] = trajectory_x
             meteorite["trajectory_z"] = trajectory_z
             meteorite["trajectory_x_speed"] = trajectory_x_speed
@@ -435,22 +254,12 @@ def calculate_trajectories(meteorite, delta_t, probability_explosion_meteorites,
             for m in range(value):
                 new_meteorite = create_meteorite(len(list_meteorites), trajectory_x[-1], trajectory_z[-1])
                 list_meteorites.append(new_meteorite)
-    list_trajectories_x.append(trajectory_x)
-    list_trajectories_z.append(trajectory_z)
-    # for i, meteorite_l in enumerate(list_meteorites):
-    #     if meteorite_l["x"] == trajectory_x[-1] and meteorite_l["z"] == trajectory_z[-1]:
-    #         break
-    #     else:
-    #         for m in range(value):
-    #             new_meteorite = create_meteorite(len(list_meteorites), trajectory_x[-1], trajectory_z[-1])
-    #             list_meteorites.append(new_meteorite)
-    #         break
 
 
 def create_meteorite(id_meteorite, x, z):
     x_speed = calculate_x_speed()
     z_speed = calculate_z_speed()
-    new_meteorite = dict(Meteorite.MeteoriteTwo(id=id_meteorite,
+    new_meteorite = dict(Meteorite.Meteorite(id=id_meteorite,
                                                 x=x,
                                                 z=z,
                                                 x_speed=x_speed,
@@ -464,7 +273,7 @@ def create_meteorite(id_meteorite, x, z):
 
 
 def calculate_z_speed():
-    z_speed = np.random.normal(loc=0, scale=0.5)
+    z_speed = np.random.normal(loc=-1000, scale=0.5)
     return z_speed
 
 
@@ -478,138 +287,28 @@ def calculate_x():
     return x
 
 
-# # def numbers_meteorites(meteorites):
-# def numbers_meteorites():
-#     # random_number = np.random.poisson(meteorites)
-#     random_number = np.random.poisson(5)
-#     if random_number <= 0:
-#         return 0
-#     return random_number
+def rule_of_three(numbers_meteorites, time_sampling):
+    poisson = (time_sampling * numbers_meteorites) / 1
+    return poisson
 
 
-def valid_arrival_meteorites():
-    # arrival = random.uniform(0, 100)
-    # arrival = np.random.uniform(0, 100)
-    arrival = random.randint(0, 100)
-    if 80 <= arrival <= 100:
-        choice = random.randint(0, 1)
-        if choice == 0:
-            return 0
-        else:
-            return 1
-    elif 0 <= arrival <= 20:
-        return 0
-    elif 20 < arrival < 80:
-        # arrival = random.uniform(20, 80)
-        # arrival = np.random.uniform(20, 80)
-        arrival = random.randint(20, 80)
-        if 50 <= arrival < 80:
-            choice = random.randint(0, 1)
-            if choice == 0:
-                return 0
-            else:
-                return 1
-        else:
-            return 0
-    else:
-        print("ArrivalError")
-
-
-def rule_of_three_and_poisson(time_simulate, numbers_meteorites, time_sampling):
-    poisson = (time_sampling * numbers_meteorites) / time_simulate
-    poisson_calculate = np.random.poisson(poisson)
-    # e = math.e
-    # factorial = math.factorial(time_sampling)
-    # e_pow = pow(e, poisson * -1)
-    # poisson_pow = pow(poisson, time_sampling)
-    # poisson_calculate = (e_pow * poisson_pow) / factorial
-    return poisson_calculate
+def number_iterations(time_simulate, time_sampling):
+    return math.ceil(time_simulate / time_sampling)
 
 
 def simulate(time_simulate, numbers_meteorites, time_sampling, amount_meteorites_limits, height,
              probability_explosion_meteorites, simulate_fall):
     simulate_fall.destroy()
-    main_meteorites = 0
-    for t in range(time_sampling):
-        meteorites_sampling = rule_of_three_and_poisson(time_simulate, numbers_meteorites, time_sampling)
-        if meteorites_sampling == 0 and main_meteorites == 0:
-            main_meteorites = 0
-        else:
-            if main_meteorites == 0:
-                main_meteorites = meteorites_sampling
-            else:
-                arrival_meteorites = valid_arrival_meteorites()
-                if len(list_meteorites_main) < main_meteorites and arrival_meteorites == 1:
-                    if len(list_meteorites_main) == 0:
-                        r = random.randint(1, main_meteorites)
-                        for i in range(r):
-                            x = calculate_x()
-                            meteorite = create_meteorite(i, x, height)
-                            list_meteorites.append(meteorite)
-                            list_meteorites_main.append(meteorite)
-                        for i, m in enumerate(list_meteorites):
-                            calculate_trajectories(m, t, probability_explosion_meteorites, amount_meteorites_limits)
-                        # graph_meteorites(height)
-                    else:
-                        try:
-                            r = random.randint(1, main_meteorites - len(list_meteorites_main))
-                            for i in range(r):
-                                x = calculate_x()
-                                meteorite = create_meteorite(i, x, height)
-                                list_meteorites.append(meteorite)
-                                list_meteorites_main.append(meteorite)
-                            for i, m in enumerate(list_meteorites):
-                                calculate_trajectories(m, t, probability_explosion_meteorites, amount_meteorites_limits)
-                        except Exception:
-                            for i, m in enumerate(list_meteorites):
-                                calculate_trajectories(m, t, probability_explosion_meteorites, amount_meteorites_limits)
-                        # print(list_meteorites, "1")
-                        # graph_meteorites(height)
-                    print("creas los meteoritos principales  y evaluara si hay explosiones")
-                    continue
-                elif arrival_meteorites == 0:
-                    if len(list_meteorites) > 0:
-                        # print("si hay meteoritos")
-                        for m in list_meteorites:
-                            calculate_trajectories(m, t, probability_explosion_meteorites, amount_meteorites_limits)
-                        # print(list_meteorites, "2")
-                        # print("ya los calculo 2")
-                    else:
-                        print("no llego meteorito")
-                    continue
-                else:
-                    if len(list_meteorites_main) == 0:
-                        print("no puedes agregar explosiones")
-                    else:
-                        # print("si hay meteoritos 2")
-                        for m in list_meteorites:
-                            calculate_trajectories(m, t, probability_explosion_meteorites, amount_meteorites_limits)
-                        # print(list_meteorites, "3")
-                        print("si llego meteorito y evaluara si hay explosiones")
-                    continue
-                    # numbers_meteorites(meteorites)
-                    # meteorites = numbers_meteorites()
-                    # if meteorites == 0:
-                    #     if len(list_meteorites) > 0:
-                    #         print("si hay meteoritos")
-                    #         for meteorite in list_meteorites:
-                    #             calculate_trajectories(meteorite, t, delta_t)
-                    #         print("ya los calculo 2")
-                    #         continue
-                    # else:
-                    #     list_amount_meteorites.append(meteorites)
-                    #     for m in range(meteorites):
-                    #         print("si hay meteoritos")
-                    #         x = calculate_x()
-                    #         meteorite = create_meteorite(m, x, height)
-                    #         list_meteorites.append(meteorite)
-                    #     print("ya creo los nuevos meteoritos")
-                    #     for meteorite in list_meteorites:
-                    #         calculate_trajectories(meteorite, t, delta_t)
-                    #     print("ya los calculo")
-                    #     continue
-
-    print("final", list_meteorites)
+    meteorites_lambda = rule_of_three(numbers_meteorites, time_sampling)
+    number_iteration = number_iterations(time_simulate, time_sampling)
+    for t in range(number_iteration):
+        meteorites_poisson = np.random.poisson(meteorites_lambda)
+        for i in range(meteorites_poisson):
+            x = calculate_x()
+            meteorite = create_meteorite(len(list_meteorites), x, height)
+            list_meteorites.append(meteorite)
+        for i, m in enumerate(list_meteorites):
+            calculate_trajectories(m, t, probability_explosion_meteorites, amount_meteorites_limits)
     graph_meteorites(height)
     options_show_tables()
     if clear_button is not None:
@@ -721,14 +420,14 @@ def clean():
 
 def button_clear_and_again():
     global clear_button
-    clear_button = tkinter.Button(canvas_options, text="Otra vez", background="white", foreground="black",
-                                   command=lambda: clean())
-    clear_button.pack(padx=2, pady=1, ipady=2, ipadx=8)
+    clear_button = tkinter.Button(canvas_options, text="Nueva simulacion", background="white", foreground="black",
+                                  command=lambda: clean())
+    clear_button.place(anchor="w")
 
 
 def button_simulate(time_simulate, numbers_meteorites, time_sampling, amount_meteorites, height, probability_explosion):
     global simulate_fall
-    if probability_explosion < 0 or probability_explosion < 0.0:
+    if probability_explosion < 0:
         print("ProbabilityError")
     else:
         simulate_fall = tkinter.Button(canvas_options, text="Simular", background="red", foreground="white",
@@ -745,10 +444,10 @@ def button_simulate(time_simulate, numbers_meteorites, time_sampling, amount_met
 
 def options_probability_explosion(time_simulate, numbers_meteorites, time_sampling, amount_meteorites, height):
     global label_probability_explosion, probability_explosion, add_probability_button
-    if height < 1 or height < 1.0:
+    if height < 1:
         print("HeightError")
     else:
-        label_probability_explosion = tkinter.Label(canvas_options, text="Probabilidad % explosion")
+        label_probability_explosion = tkinter.Label(canvas_options, text="Probabilidad explosion % (ej: 20)")
         label_probability_explosion.pack(padx=2, pady=8, ipady=2, ipadx=8)
         probability_explosion = tkinter.Entry(canvas_options)
         probability_explosion.pack(padx=2, pady=8, ipady=2, ipadx=8)
@@ -777,52 +476,53 @@ def options_height_meteorite(time_simulate, numbers_meteorites, time_sampling, a
         add_height.pack(padx=2, ipady=2, ipadx=8)
 
 
-def options_numbers_meteorites(time_simulate, numbers_meteorites, time_sampling):
+def options_numbers_meteorites(time_simulate, time_sampling, numbers_meteorites):
     global label_meteorites_limit, amount_meteorites_limit, add_meteorites_limit_button
     if time_sampling <= 0:
         print("TimeSamplingError")
     else:
-        label_meteorites_limit = tkinter.Label(canvas_options, text="Limite de meteoritos de explosion")
+        label_meteorites_limit = tkinter.Label(canvas_options, text="Limite de explosion de los meteoritos")
         label_meteorites_limit.pack(padx=2, pady=8, ipady=2, ipadx=8)
         amount_meteorites_limit = tkinter.Entry(canvas_options)
         amount_meteorites_limit.pack(padx=2, pady=8, ipady=2, ipadx=8)
-        add_meteorites_limit_button = tkinter.Button(canvas_options, text="Agregar meteoritos",
+        add_meteorites_limit_button = tkinter.Button(canvas_options, text="Agregar limite",
                                                      command=lambda: options_height_meteorite(time_simulate,
                                                                                               numbers_meteorites,
                                                                                               time_sampling,
                                                                                               int(amount_meteorites_limit.get())))
-        # options_probability_explosion(time, delta_t, height, amount_meteorites):
         add_meteorites_limit_button.pack(padx=2, ipady=2, ipadx=8)
 
 
-def options_sampling_time(time_simulate, numbers_meteorites):
-    global label_sampling_time, amount_sampling_time, add_sampling_time
-    if numbers_meteorites <= 0:
-        print("MeteoriteError")
-    else:
-        label_sampling_time = tkinter.Label(canvas_options, text="Fracmento de tiempo en dias deltat")
-        label_sampling_time.pack(padx=2, pady=8, ipady=2, ipadx=8)
-        amount_sampling_time = tkinter.Entry(canvas_options)
-        amount_sampling_time.pack(padx=2, pady=8, ipady=2, ipadx=8)
-        add_sampling_time = tkinter.Button(canvas_options, text="Agregar tiempo",
-                                           command=lambda: options_numbers_meteorites(time_simulate, numbers_meteorites,
-                                                                                      int(amount_sampling_time.get())))
-        add_sampling_time.pack(padx=2, ipady=2, ipadx=8)
-
-
-def options_numbers_meteorites_by_days(time_simulate):
+def options_numbers_meteorites_by_day(time_simulate, time_sampling):
     global label_meteorites, amount_meteorites, add_meteorites
-    if time_simulate <= 0:
+    if time_sampling <= 0:
         print("TimeError")
     else:
-        label_meteorites = tkinter.Label(canvas_options, text=f'Media de meteoritos en {time_simulate} dias')
+        label_meteorites = tkinter.Label(canvas_options, text="Media de meteoritos en un dia")
         label_meteorites.pack(padx=2, pady=8, ipady=2, ipadx=8)
         amount_meteorites = tkinter.Entry(canvas_options)
         amount_meteorites.pack(padx=2, pady=8, ipady=2, ipadx=8)
         add_meteorites = tkinter.Button(canvas_options, text="Agregar media de meteoritos",
-                                        command=lambda: options_sampling_time(time_simulate,
-                                                                              int(amount_meteorites.get())))
+                                        command=lambda: options_numbers_meteorites(time_simulate,
+                                                                                   time_sampling,
+                                                                                   int(amount_meteorites.get())))
         add_meteorites.pack(padx=2, ipady=2, ipadx=8)
+
+
+def options_sampling_time(time_simulate):
+    global label_sampling_time, amount_sampling_time, add_sampling_time
+    if time_simulate <= 0:
+        print("MeteoriteError")
+    else:
+        label_sampling_time = tkinter.Label(canvas_options, text="Tiempo de muestreo en dias (Δt)")
+        label_sampling_time.pack(padx=2, pady=8, ipady=2, ipadx=8)
+        amount_sampling_time = tkinter.Entry(canvas_options)
+        amount_sampling_time.pack(padx=2, pady=8, ipady=2, ipadx=8)
+        add_sampling_time = tkinter.Button(canvas_options, text="Agregar tiempo",
+                                           command=lambda: options_numbers_meteorites_by_day(time_simulate,
+                                                                                             float(amount_sampling_time.get())))
+        add_sampling_time.pack(padx=2, ipady=2, ipadx=8)
+
 
 def options_select_type_time_simulation():
     global label_type_time, entry_time, add_time
@@ -831,7 +531,7 @@ def options_select_type_time_simulation():
     entry_time = tkinter.Entry(canvas_options)
     entry_time.pack(padx=2, pady=8, ipady=2, ipadx=8)
     add_time = tkinter.Button(canvas_options, text="Agregar tiempo de simulacion",
-                              command=lambda: options_numbers_meteorites_by_days(int(entry_time.get())))
+                              command=lambda: options_sampling_time(float(entry_time.get())))
     add_time.pack(padx=2, ipady=2, ipadx=8)
 
 
